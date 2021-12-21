@@ -7,6 +7,10 @@ import android.content.UriMatcher;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 public class MyContentProvider extends ContentProvider {
 
     private static final String AUTHORITY
@@ -62,11 +66,17 @@ public class MyContentProvider extends ContentProvider {
     }
 
     @Override
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+        return 0;
+    }
+
+    @Override
     public String getType(Uri uri) {
         // TODO: Implement this to handle requests for the MIME type of the data
         // at the given URI.
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
@@ -114,45 +124,5 @@ public class MyContentProvider extends ContentProvider {
                 selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
-    }
-
-    @Override
-    public int update(Uri uri, ContentValues values, String selection,
-                      String[] selectionArgs) {
-        int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = myHandler.getWritableDatabase();
-        int rowsUpdated = 0;
-        switch (uriType) {
-            case STUDENTS:
-                rowsUpdated =
-                        sqlDB.update(DataHandler.TABLE_NAME,
-                                values,
-                                selection,
-                                selectionArgs);
-                break;
-            case STUDENTS_ID:
-                String id = uri.getLastPathSegment();
-                if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated =
-                            sqlDB.update(DataHandler.TABLE_NAME,
-                                    values,
-                                    DataHandler.COLUMN_ID + "=" + id,
-                                    null);
-                } else {
-                    rowsUpdated =
-                            sqlDB.update(DataHandler.TABLE_NAME,
-                                    values,
-                                    DataHandler.COLUMN_ID + "=" + id
-                                            + " and "
-                                            + selection,
-                                    selectionArgs);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown URI: "
-                        + uri);
-        }
-        getContext().getContentResolver().notifyChange(uri, null);
-        return rowsUpdated;
     }
 }
